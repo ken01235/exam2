@@ -51,6 +51,7 @@ void close_mqtt();
 float *accData;
 int dataLength = 0;
 int rc;
+bool send_message = 0;
 
 int main(void) {
     wifi = WiFiInterface::get_default_instance();
@@ -100,14 +101,13 @@ int main(void) {
     }
 
     mqtt_thread.start(callback(&mqtt_queue, &EventQueue::dispatch_forever));
-    mqtt_queue.event(&publish_message, &client);
     //btn3.rise(&close_mqtt);
+    btn.rise(callback(mqtt_queue.event(&publish_message, &client)));
 
     char buf[256], outbuf[256];
 
     FILE *devin = fdopen(&pc, "r");
     FILE *devout = fdopen(&pc, "w");
-
     while(1) {
         memset(buf, 0, 256);
         for (int i = 0; ; i++) {
@@ -127,7 +127,7 @@ int main(void) {
 void gestureUI(Arguments *in, Reply *out){
     myled1 = 1;
     t.start(accCapture);
-    btn.rise(selectfreq_terminate, &clinet);
+    btn.rise(selectfreq_terminate);
     if (terminate1) t.terminate();
 }
 
@@ -287,7 +287,6 @@ void publish_message(MQTT::Client<MQTTNetwork, Countdown>* client) {
     message_num++;
     MQTT::Message message;
     char buff[100];
-    // sprintf(buff, "x: %d, y: %d, z: %d\n", pDataXYZ2[0], pDataXYZ2[1], pDataXYZ2[2]);
     sprintf(buff, "GuestureID: %d", selection);
     message.qos = MQTT::QOS0;
     message.retained = false;
@@ -307,30 +306,14 @@ void close_mqtt() {
 void selectfreq_terminate(void){
     terminate1 = 1;
     myled1 = 0;
-//     int num = 0;
-//     while (num != 5) {
-//         client.yield(100);
-//         ++num;
-//     }
-// 
-//     while (1) {
-//         if (closed) break;
-//         client.yield(500);
-//         ThisThread::sleep_for(500ms);
-//     }
-// 
-// //    printf("Ready to close MQTT Network......\n");
-// 
-//     if ((rc = client.unsubscribe(topic)) != 0) {
-// //        printf("Failed: rc from unsubscribe was %d\n", rc);
-//     }
-//     if ((rc = client.disconnect()) != 0) {
-// //        printf("Failed: rc from disconnect was %d\n", rc);
-//     }
-// 
-//     mqttNetwork.disconnect();
-// //    printf("Successfully closed!\n");
-// 
-//     return ;
+    send_message = 1;
+
+}
+int dataAnalysis(void) {
+    //accData[], dataLength
+    int rotating;
+    BSP_ACCELERO_Init();
+    BSP_ACCELERO_AccGetXYZ(pDataXYZ2);
+
 
 }

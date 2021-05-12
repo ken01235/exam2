@@ -102,7 +102,7 @@ int main(void) {
 
     mqtt_thread.start(callback(&mqtt_queue, &EventQueue::dispatch_forever));
     //btn3.rise(&close_mqtt);
-    btn.rise(callback(mqtt_queue.event(&publish_message, &client)));
+    btn.rise(mqtt_queue.event(&publish_message, &client));
 
     char buf[256], outbuf[256];
 

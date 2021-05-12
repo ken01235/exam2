@@ -8,7 +8,7 @@ mqttc = paho.Client()
 
 # Settings for connection
 # TODO: revise host to your IP
-host = "192.168.43.177"
+host = "192.168.160.36"
 topic = "Mbed"
 
 # Callbacks

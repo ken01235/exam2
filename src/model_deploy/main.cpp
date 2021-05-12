@@ -1,3 +1,4 @@
+#include <iostream>
 #include "mbed.h"
 #include "mbed_rpc.h"
 #include "accelerometer_handler.h"
@@ -29,8 +30,8 @@ void accCapture(void);
 int  PredictGesture(float*);
 void selectfreq_terminate(void);
 int terminate1 = 0;
-int angelDetect(void);
-int selection = 180;
+// int angelDetect(void);
+int selection = 0;
 constexpr int kTensorArenaSize = 60 * 1024;
 uint8_t tensor_arena[kTensorArenaSize];
 uLCD_4DGL uLCD(D1, D0, D2); // serial tx, serial rx, reset pin;
@@ -48,8 +49,60 @@ void messageArrived(MQTT::MessageData& md);
 void publish_message(MQTT::Client<MQTTNetwork, Countdown>* client);
 void close_mqtt();
 float *accData;
+int dataLength = 0;
+int rc;
 
 int main(void) {
+    wifi = WiFiInterface::get_default_instance();
+    if (!wifi) {
+        printf("ERROR: No WiFiInterface found.\r\n");
+        return -1;
+    }
+
+
+    printf("\nConnecting to %s...\r\n", MBED_CONF_APP_WIFI_SSID);
+    int ret = wifi->connect(MBED_CONF_APP_WIFI_SSID, MBED_CONF_APP_WIFI_PASSWORD, NSAPI_SECURITY_WPA_WPA2);
+    if (ret != 0) {
+        printf("\nConnection error: %d\r\n", ret);
+        return -1;
+    }
+
+
+    NetworkInterface* net = wifi;
+    MQTTNetwork mqttNetwork(net);
+    MQTT::Client<MQTTNetwork, Countdown> client(mqttNetwork);
+
+    const char* host = "192.168.160.36";
+    printf("Connecting to TCP network...\r\n");
+
+    SocketAddress sockAddr;
+    sockAddr.set_ip_address(host);
+    sockAddr.set_port(1883);
+
+    printf("address is %s/%d\r\n", (sockAddr.get_ip_address() ? sockAddr.get_ip_address() : "None"),  (sockAddr.get_port() ? sockAddr.get_port() : 0) ); //check setting
+
+    rc = mqttNetwork.connect(sockAddr);//(host, 1883);
+    if (rc != 0) {
+        printf("Connection error.");
+        return -1;
+    }
+    printf("Successfully connected!\r\n");
+
+    MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
+    data.MQTTVersion = 3;
+    data.clientID.cstring = "Mbed";
+
+    if ((rc = client.connect(data)) != 0){
+        printf("Fail to connect MQTT\r\n");
+    }
+    if (client.subscribe(topic, MQTT::QOS0, messageArrived) != 0){
+        printf("Fail to subscribe\r\n");
+    }
+
+    mqtt_thread.start(callback(&mqtt_queue, &EventQueue::dispatch_forever));
+    mqtt_queue.event(&publish_message, &client);
+    //btn3.rise(&close_mqtt);
+
     char buf[256], outbuf[256];
 
     FILE *devin = fdopen(&pc, "r");
@@ -74,13 +127,14 @@ int main(void) {
 void gestureUI(Arguments *in, Reply *out){
     myled1 = 1;
     t.start(accCapture);
-    btn.rise(selectfreq_terminate);
+    btn.rise(selectfreq_terminate, &clinet);
+    if (terminate1) t.terminate();
 }
 
-void tiltUI(Arguments *in, Reply *out){
-    myled2 = 1;
-    t2.start(angelDetect);
-}
+// void tiltUI(Arguments *in, Reply *out){
+//     myled2 = 1;
+//     t2.start(angelDetect);
+// }
 
 int PredictGesture(float* output) {
     static int continuous_count = 0;
@@ -171,6 +225,10 @@ void accCapture(void) {
 
     error_reporter->Report("Set up successful...\n");
 
+    uLCD.cls();
+    uLCD.text_width(2);
+    uLCD.text_height(2);
+    uLCD.printf("GestureID:\n"); //Default Green on black text
     while (true) {
 
         got_data = ReadAccelerometer(error_reporter, model_input->data.f,
@@ -189,19 +247,19 @@ void accCapture(void) {
 
         gesture_index = PredictGesture(interpreter->output(0)->data.f);
         accData = interpreter->output(0)->data.f;
+        dataLength = input_length;
 
         should_clear_buffer = gesture_index < label_num;
 
         if (gesture_index < label_num) {
             //error_reporter->Report(config.output_message[gesture_index]);
-            selection = (gesture_index + 1) * 45;
+            selection = gesture_index;
             uLCD.cls();
             uLCD.text_width(2);
             uLCD.text_height(2);
-            uLCD.printf("selection:\n");
+            uLCD.printf("GestureID:\n");
             display(selection);
         }
-        if (terminate1) return;
     }
 }
 
@@ -229,7 +287,8 @@ void publish_message(MQTT::Client<MQTTNetwork, Countdown>* client) {
     message_num++;
     MQTT::Message message;
     char buff[100];
-    sprintf(buff, "x: %d, y: %d, z: %d\n", pDataXYZ2[0], pDataXYZ2[1], pDataXYZ2[2]);
+    // sprintf(buff, "x: %d, y: %d, z: %d\n", pDataXYZ2[0], pDataXYZ2[1], pDataXYZ2[2]);
+    sprintf(buff, "GuestureID: %d", selection);
     message.qos = MQTT::QOS0;
     message.retained = false;
     message.dup = false;
@@ -248,4 +307,30 @@ void close_mqtt() {
 void selectfreq_terminate(void){
     terminate1 = 1;
     myled1 = 0;
+//     int num = 0;
+//     while (num != 5) {
+//         client.yield(100);
+//         ++num;
+//     }
+// 
+//     while (1) {
+//         if (closed) break;
+//         client.yield(500);
+//         ThisThread::sleep_for(500ms);
+//     }
+// 
+// //    printf("Ready to close MQTT Network......\n");
+// 
+//     if ((rc = client.unsubscribe(topic)) != 0) {
+// //        printf("Failed: rc from unsubscribe was %d\n", rc);
+//     }
+//     if ((rc = client.disconnect()) != 0) {
+// //        printf("Failed: rc from disconnect was %d\n", rc);
+//     }
+// 
+//     mqttNetwork.disconnect();
+// //    printf("Successfully closed!\n");
+// 
+//     return ;
+
 }

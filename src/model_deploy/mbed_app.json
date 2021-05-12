@@ -2,11 +2,11 @@
     "config": {
     "wifi-ssid": {
             "help": "WiFi SSID",
-            "value": "\"cbc\""
+            "value": "\"emlab\""
     },
     "wifi-password": {
             "help": "WiFi Password",
-            "value": "\"cccccccc\""
+            "value": "\"eenthu2405\""
     }
     },
     "target_overrides": {

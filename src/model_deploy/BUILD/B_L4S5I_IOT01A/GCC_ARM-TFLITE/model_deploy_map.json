@@ -2,10 +2,10 @@
     {
         "module": "../..",
         "size": {
-            ".text": 37572,
-            ".data": 444,
-            ".bss": 8558,
-            ".text-delta": -16,
+            ".text": 55358,
+            ".data": 543,
+            ".bss": 12731,
+            ".text-delta": 0,
             ".data-delta": 0,
             ".bss-delta": 0
         }
@@ -13,31 +13,31 @@
     {
         "module": "BUILD/B_L4S5I_IOT01A",
         "size": {
-            ".text": 26740,
+            ".text": 40302,
             ".data": 309,
-            ".bss": 66554,
-            ".text-delta": 0,
+            ".bss": 68440,
+            ".text-delta": -206,
             ".data-delta": 0,
-            ".bss-delta": 0
+            ".bss-delta": 500
         }
     },
     {
         "module": "[fill]",
         "size": {
-            ".text": 180,
-            ".data": 10,
-            ".bss": 35,
-            ".text-delta": -48,
+            ".text": 244,
+            ".data": 24,
+            ".bss": 50,
+            ".text-delta": 14,
             ".data-delta": 0,
-            ".bss-delta": 0
+            ".bss-delta": 4
         }
     },
     {
         "module": "[lib]/c.a",
         "size": {
-            ".text": 32380,
-            ".data": 2472,
-            ".bss": 89,
+            ".text": 77780,
+            ".data": 2574,
+            ".bss": 127,
             ".text-delta": 0,
             ".data-delta": 0,
             ".bss-delta": 0
@@ -46,7 +46,7 @@
     {
         "module": "[lib]/gcc.a",
         "size": {
-            ".text": 3596,
+            ".text": 7356,
             ".data": 0,
             ".bss": 0,
             ".text-delta": 0,
@@ -57,7 +57,7 @@
     {
         "module": "[lib]/m.a",
         "size": {
-            ".text": 2552,
+            ".text": 2572,
             ".data": 1,
             ".bss": 0,
             ".text-delta": 0,
@@ -90,9 +90,9 @@
     {
         "module": "[lib]/stdc++.a",
         "size": {
-            ".text": 40,
-            ".data": 0,
-            ".bss": 16,
+            ".text": 175916,
+            ".data": 145,
+            ".bss": 5720,
             ".text-delta": 0,
             ".data-delta": 0,
             ".bss-delta": 0
@@ -100,10 +100,10 @@
     },
     {
         "summary": {
-            "static_ram": 78520,
-            "static_ram_delta": 0,
-            "total_flash": 106512,
-            "total_flash_delta": -64
+            "static_ram": 90696,
+            "static_ram_delta": 504,
+            "total_flash": 363340,
+            "total_flash_delta": -192
         }
     }
 ]
